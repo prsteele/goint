@@ -26,12 +26,44 @@ func SimpsonIntegration(f Function, a, b, h float64) float64 {
 	result := 0.0
 	L := <-pts
 	fL := f(L)
-	fR := 0.0
 	for R := range pts {
 		coef := (R - L) / 6.0
-		fR = f(R)
 		fM := f((L + R) / 2.0)
+		fR := f(R)
+
 		result += coef * (fL + 4*fM + fR)
+		L = R
+		fL = fR
+	}
+
+	return result
+}
+
+func BooleIntegration(f Function, a, b, h float64) float64 {
+	if h <= 0 {
+		err := errors.New("Must specify a step width")
+		panic(err)
+	}
+
+	// Get a channel of points ready
+	pts := make(chan float64)
+	go points(a, b, h, pts)
+
+	// Compute Boole's rule over each interval
+	result := 0.0
+	L := <-pts
+	fL := f(L)
+
+	for R := range pts {
+		w := (R - L) / 4.0
+		coef := 2 * w / 45.0
+
+		f2 := f(L + w)
+		f3 := f(L + 2*w)
+		f4 := f(L + 3*w)
+		fR := f(R) // R == L + 4 * w
+
+		result += coef * (7*fL + 32*f2 + 12*f3 + 32*f4 + 7*fR)
 		L = R
 		fL = fR
 	}
