@@ -50,7 +50,7 @@ func TestSimpsonPolynomials(t *testing.T) {
 		h   = 1e-5
 		a   = -1
 		b   = 3
-		err = 1e-3
+		err = 1e-6
 	)
 
 	Ps, Is := polynomials()
@@ -63,8 +63,6 @@ func TestSimpsonPolynomials(t *testing.T) {
 		correct_val := p_int(b) - p_int(a)
 		computed_err := math.Abs(computed_val - correct_val)
 
-		fmt.Println(computed_err)
-
 		if computed_err > err {
 			t.Errorf("Computed error %.3g exceeds acceptable error %.3g", computed_err, err)
 		}
@@ -76,7 +74,7 @@ func TestBoolePolynomials(t *testing.T) {
 		h   = 1e-5
 		a   = -1
 		b   = 3
-		err = 1e-3
+		err = 1e-7
 	)
 
 	Ps, Is := polynomials()
@@ -88,7 +86,6 @@ func TestBoolePolynomials(t *testing.T) {
 		computed_val := BooleIntegration(p, a, b, h)
 		correct_val := p_int(b) - p_int(a)
 		computed_err := math.Abs(computed_val - correct_val)
-
 		fmt.Println(computed_err)
 
 		if computed_err > err {

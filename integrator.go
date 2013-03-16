@@ -1,7 +1,6 @@
 package goint
 
 import (
-	"errors"
 	"math"
 )
 
@@ -12,63 +11,90 @@ type Function func(x float64) float64
 
 type Integrator func(f Function, a, b float64, nsteps int) float64
 
-func SimpsonIntegration(f Function, a, b, h float64) float64 {
-	if h <= 0 {
-		err := errors.New("Must specify a step width")
-		panic(err)
+func SimpsonIntegration(f Function, a, b, err float64) float64 {
+	// Get an initial estimate
+	ret := (b - a) * (f(a) + 4*f((a+b)/2.0) + f(b)) / 6.0
+
+	points := []float64{a, b}
+	done := false
+	for !done {
+		// Get a refined estimate
+		points = refinedPoints(points)
+
+		refined := 0.0
+		L := points[0]
+		fL := f(L)
+		for _, R := range points[1:] {
+			M := (L + R) / 2.0
+			fM := f(M)
+			fR := f(R)
+
+			refined += (R - L) * (fL + 4*fM + fR) / 6.0
+			L = R
+			fL = fR
+		}
+
+		if math.Abs(ret-refined) < err {
+			done = true
+		}
+
+		ret = refined
 	}
 
-	// Get a channel of points ready
-	pts := make(chan float64)
-	go points(a, b, h, pts)
-
-	// Compute Simpson's rule over each interval
-	result := 0.0
-	L := <-pts
-	fL := f(L)
-	for R := range pts {
-		coef := (R - L) / 6.0
-		fM := f((L + R) / 2.0)
-		fR := f(R)
-
-		result += coef * (fL + 4*fM + fR)
-		L = R
-		fL = fR
-	}
-
-	return result
+	return ret
 }
 
-func BooleIntegration(f Function, a, b, h float64) float64 {
-	if h <= 0 {
-		err := errors.New("Must specify a step width")
-		panic(err)
+func BooleIntegration(f Function, a, b, err float64) float64 {
+	// Get an initial estimate
+	ret := (b - a) * (f(a) + 4*f((a+b)/2.0) + f(b)) / 6.0
+
+	points := []float64{a, b}
+	done := false
+	for !done {
+		// Get a refined estimate
+		points = refinedPoints(points)
+
+		refined := 0.0
+		L := points[0]
+		fL := f(L)
+		for _, R := range points[1:] {
+			h := (R - L) / 4.0
+			f2 := f(L + h)
+			f3 := f(L + 2*h)
+			f4 := f(L + 3*h)
+			fR := f(R) // R == L + 4 * h
+
+			refined += 2 * h * (7*fL + 32*f2 + 12*f3 + 32*f4 + 7*fR) / 45.0
+			L = R
+			fL = fR
+		}
+
+		if math.Abs(ret-refined) < err {
+			done = true
+		}
+
+		ret = refined
 	}
 
-	// Get a channel of points ready
-	pts := make(chan float64)
-	go points(a, b, h, pts)
+	return ret
+}
 
-	// Compute Boole's rule over each interval
-	result := 0.0
-	L := <-pts
-	fL := f(L)
+/* Returns a new slice of values containing all the values in points
+/* as well as the midpoint of each sequential pair in points. For example,
+/*
+/*   refinedPoints([]float64{0, 2, 4}) == []float64{0, 1, 2, 3, 4} */
+func refinedPoints(points []float64) []float64 {
+	refined := make([]float64, len(points)*2-1)
 
-	for R := range pts {
-		w := (R - L) / 4.0
-		coef := 2 * w / 45.0
-
-		f2 := f(L + w)
-		f3 := f(L + 2*w)
-		f4 := f(L + 3*w)
-		fR := f(R) // R == L + 4 * w
-
-		result += coef * (7*fL + 32*f2 + 12*f3 + 32*f4 + 7*fR)
-		L = R
-		fL = fR
+	ndx := 0
+	for i := 0; i < len(points)-1; i++ {
+		refined[ndx] = points[i]
+		refined[ndx+1] = (points[i] + points[i+1]) / 2.0
+		ndx += 2
 	}
+	refined[ndx] = points[len(points)-1]
 
-	return result
+	return refined
 }
 
 /* Sends float64 values along the provided channel spaced across the
