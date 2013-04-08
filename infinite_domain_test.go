@@ -93,7 +93,7 @@ func TestNormal(t *testing.T) {
 		return math.Exp(-x*x/2) / math.Sqrt(2*math.Pi)
 	}
 
-	if msg, ok := test_integral(f, 0, 1, 1e-6, 0); !ok {
+	if msg, ok := test_integral(f, math.Inf(-1), 0, 1e-6, .5); !ok {
 		t.Error(msg)
 	}
 }
