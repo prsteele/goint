@@ -1,7 +1,6 @@
 package goint
 
 import (
-	"fmt"
 	"math"
 	"testing"
 )
@@ -45,31 +44,7 @@ func polynomials() ([]Function, []Function) {
 	return Ps, Is
 }
 
-func TestSimpsonPolynomials(t *testing.T) {
-	const (
-		h   = 1e-5
-		a   = -1
-		b   = 3
-		err = 1e-6
-	)
-
-	Ps, Is := polynomials()
-
-	for i, _ := range Ps {
-		p := Ps[i]
-		p_int := Is[i]
-
-		computed_val := SimpsonIntegration(p, a, b, h)
-		correct_val := p_int(b) - p_int(a)
-		computed_err := math.Abs(computed_val - correct_val)
-
-		if computed_err > err {
-			t.Errorf("Computed error %.3g exceeds acceptable error %.3g", computed_err, err)
-		}
-	}
-}
-
-func TestBoolePolynomials(t *testing.T) {
+func TestPolynomials(t *testing.T) {
 	const (
 		h   = 1e-5
 		a   = -1
@@ -83,13 +58,12 @@ func TestBoolePolynomials(t *testing.T) {
 		p := Ps[i]
 		p_int := Is[i]
 
-		computed_val := BooleIntegration(p, a, b, h)
+		computed_val := Integrate(p, a, b, h)
 		correct_val := p_int(b) - p_int(a)
 		computed_err := math.Abs(computed_val - correct_val)
-		fmt.Println(computed_err)
 
 		if computed_err > err {
-			t.Errorf("Computed error %.3g exceeds acceptable error %.3g", computed_err, err)
+			t.Errorf("Error %.3g exceeds acceptable error %.3g", computed_err, err)
 		}
 	}
 }

@@ -13,6 +13,7 @@ func f(x float64) float64 {
 }
 
 func main() {
-	fmt.Println(goint.SimpsonIntegration(f, 0, 5, 1e-4))
-	fmt.Println(goint.SimpsonIntegration(math.Exp, math.Inf(-1), 0, 1e-6))
+	fmt.Println(goint.Integrate(f, 0, 5, 1e-4))
+	fmt.Println(goint.Integrate(math.Exp, math.Inf(-1), 0, 1e-6))
+	fmt.Println(goint.Integrate(func(x float64) float64 { return math.Exp(-x) }, 0, math.Inf(1), 1e-6))
 }
